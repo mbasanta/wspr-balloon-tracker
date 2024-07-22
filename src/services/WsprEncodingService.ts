@@ -1,6 +1,10 @@
 import { WsprExTelemData } from "../types/WsprExTelemData";
 import { WsprMessagePayload } from "../types/WsprMessagePayload";
 
+// Reference:
+// https://qrp-labs.com/flights/s4#protocol
+// https://github.com/Krounet/gnuradio-WSPR/blob/development/WSPR_Coding_Process.pdf
+
 export function decodeWsprMessagePayload(
   payload: WsprMessagePayload
 ): WsprExTelemData {
