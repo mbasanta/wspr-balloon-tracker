@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
-import './App.css'
-import { getBaseWsprData, getTelemetryWsprData, mergeWsprData } from './services/WsprService'
+import { useEffect, useState } from "react";
+import "./App.css";
+import { mergeWsprData } from "./services/WsprDataService";
 
 function App() {
   const [wsprData, setWsprData] = useState<any>([]);
@@ -20,20 +20,16 @@ function App() {
     });
   });
 
-  let tableData = wsprData.map((row: any, index: number) =>
+  let tableData = wsprData.map((row: any, index: number) => (
     <tr key={index}>
       <td>{row[0].toISOString()}</td>
       <td>{row[2]}</td>
       <td>{row[3]}</td>
       <td>{row[4]}</td>
     </tr>
-  );
+  ));
 
-  return (
-    <table>
-      {tableData}
-    </table>
-  )
+  return <table>{tableData}</table>;
 }
 
-export default App
+export default App;
