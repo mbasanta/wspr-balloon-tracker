@@ -5,4 +5,5 @@ export type WsprExTelemData = {
   voltage: number;
   speed: number;
   gpsValid: boolean;
+  gpsSatsGood: boolean;
 };
