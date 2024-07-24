@@ -1,11 +1,6 @@
+import { DecodedWsprData } from "../types/DecodedWsprData";
 import axiosClient from "./AxiosClient";
-
-interface WsprDataRequest {
-  callsign: string;
-  channel: number;
-  start?: Date;
-  end?: Date;
-}
+import { decodeWsprMessagePayload } from "./WsprEncodingService";
 
 function createBaseWsprQuery() {
   return `
@@ -123,25 +118,52 @@ export async function getBaseWsprData(): Promise<any> {
   });
 }
 
-export async function mergeWsprData(): Promise<any> {
+export async function mergeWsprData(): Promise<DecodedWsprData[]> {
   return Promise.all([getBaseWsprData(), getTelemetryWsprData()]).then(
     (data) => {
       //merge the data based on the timestamp
       const [baseData, telemetryData] = data;
-      const mergedData: { [key: string]: any } = {};
+      let mergedData: { [key: string]: DecodedWsprData } = {};
 
       Object.keys(baseData).forEach((timestamp) => {
         if (telemetryData.hasOwnProperty(timestamp)) {
-          mergedData[timestamp] = [
-            ...baseData[timestamp],
-            ...telemetryData[timestamp],
-          ];
+          let encodedWsprMessagePayload = {
+            callsign: telemetryData[timestamp][2],
+            locator: telemetryData[timestamp][3],
+            dBm: telemetryData[timestamp][4],
+          };
+
+          let decodedWsprData = decodeWsprMessagePayload(
+            encodedWsprMessagePayload
+          );
+
+          mergedData[timestamp] = {
+            timestamp: baseData[timestamp][0],
+            callsign: baseData[timestamp][2],
+            locator: baseData[timestamp][3] + decodedWsprData.gridSuffix,
+            dBm: baseData[timestamp][4],
+            altitude: decodedWsprData.altitude,
+            temperature: decodedWsprData.temperature,
+            voltage: decodedWsprData.voltage,
+            speed: decodedWsprData.speed,
+            gpsValid: decodedWsprData.gpsValid,
+          };
         } else {
-          mergedData[timestamp] = baseData[timestamp];
+          mergedData[timestamp] = {
+            timestamp: baseData[timestamp][0],
+            callsign: baseData[timestamp][2],
+            locator: baseData[timestamp][3],
+            dBm: baseData[timestamp][4],
+            altitude: undefined,
+            temperature: undefined,
+            voltage: undefined,
+            speed: undefined,
+            gpsValid: false,
+          };
         }
       });
 
-      return mergedData;
+      return Object.values(mergedData);
     }
   );
 }

@@ -3,9 +3,9 @@ export type DecodedWsprData = {
   callsign: string;
   locator: string;
   dBm: number;
-  altitude: number;
-  temperature: number;
-  voltage: number;
-  speed: number;
+  altitude?: number;
+  temperature?: number;
+  voltage?: number;
+  speed?: number;
   gpsValid: boolean;
 };
