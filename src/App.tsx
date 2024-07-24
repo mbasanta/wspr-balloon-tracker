@@ -60,6 +60,8 @@ function App() {
       cell: (info) =>
         info.getValue() ? Math.round(info.getValue()! * 100) / 100 : "",
     }),
+    { header: "Latitude", accessorKey: "lat" },
+    { header: "Longitude", accessorKey: "long" },
   ];
 
   const table = useReactTable({

@@ -8,4 +8,6 @@ export type DecodedWsprData = {
   voltage?: number;
   speed?: number;
   gpsValid: boolean;
+  lat: number;
+  long: number;
 };

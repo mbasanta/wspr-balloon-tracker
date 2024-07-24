@@ -1,5 +1,6 @@
 import { DecodedWsprData } from "../types/DecodedWsprData";
 import axiosClient from "./AxiosClient";
+import { gridSquareToCoordinates } from "./MaidenheadService";
 import { decodeWsprMessagePayload } from "./WsprEncodingService";
 
 function createBaseWsprQuery() {
@@ -85,7 +86,6 @@ function formatWsprData(
     return acc;
   }, {});
   return formatedData;
-  //return Object.values(formatedData);
 }
 
 export async function getTelemetryWsprData(): Promise<any> {
@@ -137,18 +137,25 @@ export async function mergeWsprData(): Promise<DecodedWsprData[]> {
             encodedWsprMessagePayload
           );
 
+          let fullGrid = baseData[timestamp][3] + decodedWsprData.gridSuffix;
+          let latLong = gridSquareToCoordinates(fullGrid);
+
           mergedData[timestamp] = {
             timestamp: baseData[timestamp][0],
             callsign: baseData[timestamp][2],
-            locator: baseData[timestamp][3] + decodedWsprData.gridSuffix,
+            locator: fullGrid,
             dBm: baseData[timestamp][4],
             altitude: decodedWsprData.altitude,
             temperature: decodedWsprData.temperature,
             voltage: decodedWsprData.voltage,
             speed: decodedWsprData.speed,
             gpsValid: decodedWsprData.gpsValid,
+            lat: latLong.Lat,
+            long: latLong.Long,
           };
         } else {
+          let latLong = gridSquareToCoordinates(baseData[timestamp][3]);
+
           mergedData[timestamp] = {
             timestamp: baseData[timestamp][0],
             callsign: baseData[timestamp][2],
@@ -159,6 +166,8 @@ export async function mergeWsprData(): Promise<DecodedWsprData[]> {
             voltage: undefined,
             speed: undefined,
             gpsValid: false,
+            lat: latLong.Lat,
+            long: latLong.Long,
           };
         }
       });
