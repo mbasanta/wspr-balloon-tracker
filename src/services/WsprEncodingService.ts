@@ -41,7 +41,8 @@ const POWERS: { [key: number]: number } = {
 export function decodeWsprMessagePayload(payload: WsprData): WsprExTelemData {
   let call2 = payload.tx_sign.charAt(1);
   let call2AsInt = parseInt(call2);
-  let call2Value = call2AsInt ? call2AsInt : call2.charCodeAt(0) - CHAR_A + 10;
+  let call2Value =
+    call2AsInt >= 0 ? call2AsInt : call2.charCodeAt(0) - CHAR_A + 10;
 
   let call4 = payload.tx_sign.charCodeAt(3);
   let call5 = payload.tx_sign.charCodeAt(4);
