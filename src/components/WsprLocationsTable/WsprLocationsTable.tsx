@@ -4,14 +4,14 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { DecodedWsprData } from "../../types/DecodedWsprData";
+import WsprLocation from "../../classes/WsprLocation";
 
 export default function WsprLocationsTable(props: {
-  wsprData: DecodedWsprData[];
+  wsprData: WsprLocation[];
 }) {
   const { wsprData } = props;
 
-  const columnHelper = createColumnHelper<DecodedWsprData>();
+  const columnHelper = createColumnHelper<WsprLocation>();
 
   const columns = [
     columnHelper.accessor("timestamp", {

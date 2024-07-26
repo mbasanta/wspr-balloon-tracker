@@ -1,7 +1,6 @@
-import { DecodedWsprData } from "../types/DecodedWsprData";
+import WsprLocation from "../classes/WsprLocation";
 import { WsprData } from "../types/WsprData";
 import axiosClient from "./AxiosClient";
-import { gridSquareToCoordinates } from "./MaidenheadService";
 import { decodeWsprMessagePayload } from "./WsprEncodingService";
 
 function createBaseWsprQuery() {
@@ -139,12 +138,12 @@ export async function getBaseWsprData(): Promise<{
   });
 }
 
-export async function mergeWsprData(): Promise<DecodedWsprData[]> {
+export async function mergeWsprData(): Promise<WsprLocation[]> {
   return Promise.all([getBaseWsprData(), getTelemetryWsprData()]).then(
     (data) => {
       //merge the data based on the timestamp
       const [baseData, telemetryData] = data;
-      let mergedData: { [key: string]: DecodedWsprData } = {};
+      let mergedData: { [key: string]: WsprLocation } = {};
 
       Object.keys(baseData).forEach((timestamp) => {
         if (telemetryData.hasOwnProperty(timestamp)) {
@@ -152,39 +151,26 @@ export async function mergeWsprData(): Promise<DecodedWsprData[]> {
             telemetryData[timestamp]
           );
 
-          let fullGrid =
-            baseData[timestamp].tx_locator + decodedWsprData.gridSuffix;
-          let latLong = gridSquareToCoordinates(fullGrid);
+          mergedData[timestamp] = new WsprLocation(
+            baseData[timestamp].timestamp,
+            baseData[timestamp].tx_sign,
+            baseData[timestamp].tx_locator + decodedWsprData.gridSuffix,
+            baseData[timestamp].tx_power,
+            decodedWsprData.gpsValid
+          );
 
-          mergedData[timestamp] = {
-            timestamp: baseData[timestamp].timestamp,
-            callsign: baseData[timestamp].tx_sign,
-            locator: fullGrid,
-            dBm: baseData[timestamp].tx_power,
-            altitude: decodedWsprData.altitude,
-            temperature: decodedWsprData.temperature,
-            voltage: decodedWsprData.voltage,
-            speed: decodedWsprData.speed,
-            gpsValid: decodedWsprData.gpsValid,
-            lat: latLong.Lat,
-            long: latLong.Long,
-          };
+          mergedData[timestamp].altitude = decodedWsprData.altitude;
+          mergedData[timestamp].temperature = decodedWsprData.temperature;
+          mergedData[timestamp].voltage = decodedWsprData.voltage;
+          mergedData[timestamp].speed = decodedWsprData.speed;
         } else {
-          let latLong = gridSquareToCoordinates(baseData[timestamp].tx_locator);
-
-          mergedData[timestamp] = {
-            timestamp: baseData[timestamp].timestamp,
-            callsign: baseData[timestamp].tx_sign,
-            locator: baseData[timestamp].tx_locator,
-            dBm: baseData[timestamp].tx_power,
-            altitude: undefined,
-            temperature: undefined,
-            voltage: undefined,
-            speed: undefined,
-            gpsValid: false,
-            lat: latLong.Lat,
-            long: latLong.Long,
-          };
+          mergedData[timestamp] = new WsprLocation(
+            baseData[timestamp].timestamp,
+            baseData[timestamp].tx_sign,
+            baseData[timestamp].tx_locator,
+            baseData[timestamp].tx_power,
+            false
+          );
         }
       });
 

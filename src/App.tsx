@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import "./App.css";
-import WsprLocationsTable from "./components/LocationsTable/LocationsTable";
+import WsprLocation from "./classes/WsprLocation";
+import WsprLocationsTable from "./components/WsprLocationsTable/WsprLocationsTable";
 import { mergeWsprData } from "./services/WsprDataService";
-import { DecodedWsprData } from "./types/DecodedWsprData";
 
 function App() {
-  const [wsprData, setWsprData] = useState<DecodedWsprData[]>([]);
+  const [wsprData, setWsprData] = useState<WsprLocation[]>([]);
 
   useEffect(() => {
     mergeWsprData().then((data) => {
