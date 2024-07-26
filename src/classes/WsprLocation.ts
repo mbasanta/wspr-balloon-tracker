@@ -7,6 +7,8 @@ export default class WsprLocation {
   dBm: number;
   gpsValid: boolean;
 
+  hasTelemetry: boolean = false;
+
   lat: number;
   long: number;
 

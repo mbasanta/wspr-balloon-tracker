@@ -5,6 +5,11 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import WsprLocation from "../../classes/WsprLocation";
+import classes from "./WsprLocationsTable.module.css";
+
+function roundValue(value: number, base: number) {
+  return Math.round(value * base) / base;
+}
 
 export default function WsprLocationsTable(props: {
   wsprData: WsprLocation[];
@@ -51,16 +56,27 @@ export default function WsprLocationsTable(props: {
     { header: "Speed", accessorKey: "speed" },
     columnHelper.accessor("temperature", {
       header: "Temperature",
-      cell: (info) =>
-        info.getValue() ? Math.round(info.getValue()! * 10) / 10 : "",
+      cell: (info) => (info.getValue() ? roundValue(info.getValue()!, 10) : ""),
     }),
     columnHelper.accessor("voltage", {
       header: "Voltage",
       cell: (info) =>
-        info.getValue() ? Math.round(info.getValue()! * 100) / 100 : "",
+        info.getValue() ? roundValue(info.getValue()!, 100) : "",
     }),
-    { header: "Latitude", accessorKey: "lat" },
-    { header: "Longitude", accessorKey: "long" },
+    columnHelper.accessor("lat", {
+      header: "Latitude",
+      cell: (info) =>
+        info.row.original.hasTelemetry && info.getValue()
+          ? roundValue(info.getValue()!, 10000)
+          : "",
+    }),
+    columnHelper.accessor("long", {
+      header: "Longitude",
+      cell: (info) =>
+        info.row.original.hasTelemetry && info.getValue()
+          ? roundValue(info.getValue()!, 10000)
+          : "",
+    }),
   ];
 
   const table = useReactTable({
@@ -70,7 +86,7 @@ export default function WsprLocationsTable(props: {
   });
 
   return (
-    <table>
+    <table className={classes.wsprTable}>
       <thead>
         {table.getHeaderGroups().map((headerGroup) => (
           <tr key={headerGroup.id}>

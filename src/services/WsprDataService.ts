@@ -159,6 +159,7 @@ export async function mergeWsprData(): Promise<WsprLocation[]> {
             decodedWsprData.gpsValid
           );
 
+          mergedData[timestamp].hasTelemetry = true;
           mergedData[timestamp].altitude = decodedWsprData.altitude;
           mergedData[timestamp].temperature = decodedWsprData.temperature;
           mergedData[timestamp].voltage = decodedWsprData.voltage;
