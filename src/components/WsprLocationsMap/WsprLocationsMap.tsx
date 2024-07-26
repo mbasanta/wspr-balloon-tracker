@@ -3,11 +3,11 @@ import WsprLocation from "../../classes/WsprLocation";
 
 import { Icon } from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import MapController from "../MapController/MapController";
 import classes from "./WsprLocationsMap.module.css";
 
 export default function WsprLocationsMap(props: { wsprData: WsprLocation[] }) {
-  const [position, setPosition] = useState({ lat: 38, lng: -84.5 });
   const [pointIcons, setPointIcons] = useState<JSX.Element[]>([]);
 
   const icon = new Icon({
@@ -19,9 +19,10 @@ export default function WsprLocationsMap(props: { wsprData: WsprLocation[] }) {
     if (props.wsprData.length > 0) {
       let pointIcons = props.wsprData
         .filter((wsprData) => wsprData.gpsValid)
-        .map((wsprData) => {
+        .map((wsprData, index) => {
           return (
             <Marker
+              key={index}
               icon={icon}
               position={{ lat: wsprData.lat, lng: wsprData.long }}
             >
@@ -40,18 +41,23 @@ export default function WsprLocationsMap(props: { wsprData: WsprLocation[] }) {
     }
   }, [props.wsprData]);
 
-  return (
-    <MapContainer
-      className={classes.wsprLocationsMap}
-      center={position}
-      zoom={9}
-      scrollWheelZoom={true}
-    >
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
-      {pointIcons}
-    </MapContainer>
-  );
+  const displayMap = useMemo(() => {
+    return (
+      <MapContainer
+        className={classes.wsprLocationsMap}
+        center={[0, 0]}
+        zoom={4}
+        scrollWheelZoom={true}
+      >
+        <MapController wsprData={props.wsprData} />
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
+        {pointIcons}
+      </MapContainer>
+    );
+  }, [pointIcons]);
+
+  return <div className={classes.wsprLocationsMapContainer}>{displayMap}</div>;
 }
