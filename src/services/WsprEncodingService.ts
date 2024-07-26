@@ -1,5 +1,5 @@
+import { WsprData } from "../types/WsprData";
 import { WsprExTelemData } from "../types/WsprExTelemData";
-import { WsprMessagePayload } from "../types/WsprMessagePayload";
 
 // Reference:
 // https://qrp-labs.com/flights/s4#protocol
@@ -38,16 +38,14 @@ const POWERS: { [key: number]: number } = {
   60: 18,
 };
 
-export function decodeWsprMessagePayload(
-  payload: WsprMessagePayload
-): WsprExTelemData {
-  let call2 = payload.callsign.charAt(1);
+export function decodeWsprMessagePayload(payload: WsprData): WsprExTelemData {
+  let call2 = payload.tx_sign.charAt(1);
   let call2AsInt = parseInt(call2);
   let call2Value = call2AsInt ? call2AsInt : call2.charCodeAt(0) - CHAR_A + 10;
 
-  let call4 = payload.callsign.charCodeAt(3);
-  let call5 = payload.callsign.charCodeAt(4);
-  let call6 = payload.callsign.charCodeAt(5);
+  let call4 = payload.tx_sign.charCodeAt(3);
+  let call5 = payload.tx_sign.charCodeAt(4);
+  let call6 = payload.tx_sign.charCodeAt(5);
 
   let call4Value = call4 - CHAR_A;
   let call5Value = call5 - CHAR_A;
@@ -73,15 +71,15 @@ export function decodeWsprMessagePayload(
 
   let altitude = callValue * 20;
 
-  let locator1 = payload.locator.charCodeAt(0);
-  let locator2 = payload.locator.charCodeAt(1);
+  let locator1 = payload.tx_locator.charCodeAt(0);
+  let locator2 = payload.tx_locator.charCodeAt(1);
 
   let locator1Value = locator1 - CHAR_A;
   let locator2Value = locator2 - CHAR_A;
 
-  let locator3Value = parseInt(payload.locator.charAt(2));
-  let locator4Value = parseInt(payload.locator.charAt(3));
-  let power = payload.dBm;
+  let locator3Value = parseInt(payload.tx_locator.charAt(2));
+  let locator4Value = parseInt(payload.tx_locator.charAt(3));
+  let power = payload.tx_power;
 
   let locatorPowerValue =
     locator1Value * GRID_1_BASE * GRID_2_BASE ** 2 * POWER_BASE +

@@ -1,4 +1,5 @@
 import { DecodedWsprData } from "../types/DecodedWsprData";
+import { WsprData } from "../types/WsprData";
 import axiosClient from "./AxiosClient";
 import { gridSquareToCoordinates } from "./MaidenheadService";
 import { decodeWsprMessagePayload } from "./WsprEncodingService";
@@ -47,7 +48,7 @@ FORMAT JSONCompact
     `;
 }
 
-async function queryWsprApi(query: string): Promise<any> {
+async function queryWsprApi(query: string): Promise<(string | number)[]> {
   return new Promise((resolve, reject) => {
     axiosClient
       .get(`/?query=${encodeURI(query)}`)
@@ -56,39 +57,57 @@ async function queryWsprApi(query: string): Promise<any> {
         reject(error);
       })
       .then((response: any) => {
-        resolve(response.data);
+        resolve(response.data.data);
       });
   });
 }
 
 function formatWsprData(
-  data: any,
-  rxIndex: number,
+  data: (string | number)[],
   adjustTime: boolean = false
-): any {
+): { [key: string]: WsprData } {
   let formatedData = data.reduce(function (acc: any, item: any) {
     let timestring = item[0].split(" ").join("T") + "Z";
     let timestamp = new Date(timestring);
     timestring = timestamp.toISOString();
+
     if (adjustTime) {
       timestamp.setMinutes(timestamp.getMinutes() - 2);
       timestring = timestamp.toISOString();
     }
+
     if (!acc[timestring]) {
-      acc[timestring] = [
+      acc[timestring] = {
         timestamp,
-        ...item.slice(1, rxIndex),
-        [item.slice(rxIndex)],
-      ];
+        minutes: item[1],
+        tx_sign: item[2],
+        tx_locator: item[3],
+        tx_power: item[4],
+        rx_data: [
+          {
+            rx_sign: item[5],
+            rx_locator: item[6],
+            frequency: item[7],
+          },
+        ],
+      };
     } else {
-      acc[timestring][rxIndex].push([...item.slice(rxIndex)]);
+      acc[timestring].rx_data.push({
+        rx_sign: item[5],
+        rx_locator: item[6],
+        frequency: item[7],
+      });
     }
+
     return acc;
   }, {});
+
   return formatedData;
 }
 
-export async function getTelemetryWsprData(): Promise<any> {
+export async function getTelemetryWsprData(): Promise<{
+  [key: string]: WsprData;
+}> {
   const query = createTelemetryWsprQuery();
   return new Promise((resolve, reject) => {
     queryWsprApi(query)
@@ -97,13 +116,15 @@ export async function getTelemetryWsprData(): Promise<any> {
         reject(error);
       })
       .then((data) => {
-        let rows = formatWsprData(data.data, 5, true);
+        let rows = formatWsprData(data ?? [], true);
         resolve(rows);
       });
   });
 }
 
-export async function getBaseWsprData(): Promise<any> {
+export async function getBaseWsprData(): Promise<{
+  [key: string]: WsprData;
+}> {
   const query = createBaseWsprQuery();
   return new Promise((resolve, reject) => {
     queryWsprApi(query)
@@ -112,7 +133,7 @@ export async function getBaseWsprData(): Promise<any> {
         reject(error);
       })
       .then((data) => {
-        let rows = formatWsprData(data.data, 5);
+        let rows = formatWsprData(data ?? []);
         resolve(rows);
       });
   });
@@ -127,24 +148,19 @@ export async function mergeWsprData(): Promise<DecodedWsprData[]> {
 
       Object.keys(baseData).forEach((timestamp) => {
         if (telemetryData.hasOwnProperty(timestamp)) {
-          let encodedWsprMessagePayload = {
-            callsign: telemetryData[timestamp][2],
-            locator: telemetryData[timestamp][3],
-            dBm: telemetryData[timestamp][4],
-          };
-
           let decodedWsprData = decodeWsprMessagePayload(
-            encodedWsprMessagePayload
+            telemetryData[timestamp]
           );
 
-          let fullGrid = baseData[timestamp][3] + decodedWsprData.gridSuffix;
+          let fullGrid =
+            baseData[timestamp].tx_locator + decodedWsprData.gridSuffix;
           let latLong = gridSquareToCoordinates(fullGrid);
 
           mergedData[timestamp] = {
-            timestamp: baseData[timestamp][0],
-            callsign: baseData[timestamp][2],
+            timestamp: baseData[timestamp].timestamp,
+            callsign: baseData[timestamp].tx_sign,
             locator: fullGrid,
-            dBm: baseData[timestamp][4],
+            dBm: baseData[timestamp].tx_power,
             altitude: decodedWsprData.altitude,
             temperature: decodedWsprData.temperature,
             voltage: decodedWsprData.voltage,
@@ -154,13 +170,13 @@ export async function mergeWsprData(): Promise<DecodedWsprData[]> {
             long: latLong.Long,
           };
         } else {
-          let latLong = gridSquareToCoordinates(baseData[timestamp][3]);
+          let latLong = gridSquareToCoordinates(baseData[timestamp].tx_locator);
 
           mergedData[timestamp] = {
-            timestamp: baseData[timestamp][0],
-            callsign: baseData[timestamp][2],
-            locator: baseData[timestamp][3],
-            dBm: baseData[timestamp][4],
+            timestamp: baseData[timestamp].timestamp,
+            callsign: baseData[timestamp].tx_sign,
+            locator: baseData[timestamp].tx_locator,
+            dBm: baseData[timestamp].tx_power,
             altitude: undefined,
             temperature: undefined,
             voltage: undefined,
