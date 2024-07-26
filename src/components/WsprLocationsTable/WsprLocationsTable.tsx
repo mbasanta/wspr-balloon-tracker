@@ -5,6 +5,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import WsprLocation from "../../classes/WsprLocation";
+
 import classes from "./WsprLocationsTable.module.css";
 
 function roundValue(value: number, base: number) {

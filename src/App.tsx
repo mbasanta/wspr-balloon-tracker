@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 import WsprLocation from "./classes/WsprLocation";
+import WsprLocationsMap from "./components/WsprLocationsMap/WsprLocationsMap";
 import WsprLocationsTable from "./components/WsprLocationsTable/WsprLocationsTable";
 import { mergeWsprData } from "./services/WsprDataService";
 
@@ -13,7 +14,12 @@ function App() {
     });
   }, []);
 
-  return <WsprLocationsTable wsprData={wsprData} />;
+  return (
+    <>
+      <WsprLocationsMap wsprData={wsprData} />
+      <WsprLocationsTable wsprData={wsprData} />
+    </>
+  );
 }
 
 export default App;
