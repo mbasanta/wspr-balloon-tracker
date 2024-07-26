@@ -34,4 +34,20 @@ export default class WsprLocation {
     this.lat = latLong.Lat;
     this.long = latLong.Long;
   }
+
+  altitudeInFeet(): number | undefined {
+    return this.altitude ? this.altitude * 3.2808399 : undefined;
+  }
+
+  temperatureInFahrenheit(): number | undefined {
+    return this.temperature ? (this.temperature * 9) / 5 + 32 : undefined;
+  }
+
+  speedInMph(): number | undefined {
+    return this.speed ? this.speed * 1.15077945 : undefined;
+  }
+
+  speedInKph(): number | undefined {
+    return this.speed ? this.speed * 1.852 : undefined;
+  }
 }

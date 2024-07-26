@@ -27,9 +27,9 @@ export default function WsprLocationsTable(props: {
           timeZone: "UTC",
           hour12: false,
           year: "numeric",
-          month: "numeric",
-          day: "numeric",
-          hour: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
           minute: "numeric",
         }).format(timestamp);
       },
@@ -42,9 +42,9 @@ export default function WsprLocationsTable(props: {
         return Intl.DateTimeFormat(undefined, {
           hour12: false,
           year: "numeric",
-          month: "numeric",
-          day: "numeric",
-          hour: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
           minute: "numeric",
         }).format(timestamp);
       },
@@ -52,11 +52,27 @@ export default function WsprLocationsTable(props: {
     { header: "Callsign", accessorKey: "callsign" },
     { header: "dBm", accessorKey: "dBm" },
     { header: "Locator", accessorKey: "locator" },
-    { header: "Altitude", accessorKey: "altitude" },
-    { header: "Speed", accessorKey: "speed" },
+    { header: "Altitude (m)", accessorKey: "altitude" },
+    columnHelper.accessor((row) => row.altitudeInFeet(), {
+      header: "Altitude (ft)",
+      cell: (info) => (info.getValue() ? Math.round(info.getValue()!) : ""),
+    }),
+    { header: "Speed (kts)", accessorKey: "speed" },
+    columnHelper.accessor((row) => row.speedInMph(), {
+      header: "Speed (mph)",
+      cell: (info) => (info.getValue() ? Math.round(info.getValue()!) : ""),
+    }),
+    columnHelper.accessor((row) => row.speedInKph(), {
+      header: "Speed (kph)",
+      cell: (info) => (info.getValue() ? Math.round(info.getValue()!) : ""),
+    }),
     columnHelper.accessor("temperature", {
-      header: "Temperature",
+      header: "Temp (C)",
       cell: (info) => (info.getValue() ? roundValue(info.getValue()!, 10) : ""),
+    }),
+    columnHelper.accessor((row) => row.temperatureInFahrenheit(), {
+      header: "Temp (F)",
+      cell: (info) => (info.getValue() ? Math.round(info.getValue()!) : ""),
     }),
     columnHelper.accessor("voltage", {
       header: "Voltage",
