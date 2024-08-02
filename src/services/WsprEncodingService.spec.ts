@@ -102,6 +102,25 @@ describe("WsprEncodingService.decodeWsprMessagePayload", () => {
         gpsSatsGood: true,
       },
     },
+    {
+      payload: {
+        tx_sign: "1I0RXS",
+        tx_locator: "GE85",
+        tx_power: 0,
+        timestamp,
+        minutes,
+        rx_data,
+      },
+      expectedResults: {
+        gridSuffix: "MT",
+        altitude: 12000,
+        temperature: -19.58,
+        voltage: 4.76,
+        speed: 22,
+        gpsValid: true,
+        gpsSatsGood: true,
+      },
+    },
   ])(
     "should convert a valid Maidenhead grid square to coordinates correctly",
     ({ payload, expectedResults }) => {
